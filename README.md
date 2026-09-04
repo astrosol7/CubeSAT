@@ -1,4 +1,4 @@
-﻿# Aegis-Sentinel: Rapid Disaster Response & Situational Awareness System
+Rapid Disaster Response & Situational Awareness System
 
 [![Rust](https://img.shields.io/badge/Rust-1.98%2B-orange.svg)](https://www.rust-lang.org/)
 [![Status](https://img.shields.io/badge/Systems%20Engineering-Pass-brightgreen.svg)]()
