@@ -13,8 +13,8 @@
 
 ### 1. System Architecture Overview
 
-The system operates across two independent, air-gapped hardware tiers connected via a long-range, sub-GHz radio frequency (RF) telemetry link. It is engineered to operate when municipal power grids, commercial internet, and cellular towers have completely failed.
- AIRBORNE TACTICAL TIER (RUST FIRMWARE)
+#### The system operates across two independent, air-gapped hardware tiers connected via a long-range, sub-GHz radio frequency (RF) telemetry link. It is engineered to operate when municipal power grids, commercial internet, and cellular towers have completely failed.
+ ### AIRBORNE TACTICAL TIER (RUST FIRMWARE)
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ Standardized CubeSat-Class Aero-Pod (1U / 2U Form Factor)               ││                                                                         
 ││  ┌─────────────────┐    ┌──────────────────┐    ┌────────────────────┐  ││  
