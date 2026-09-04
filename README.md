@@ -13,37 +13,53 @@
 
 ### 1. System Architecture Overview
 
-#### The system operates across two independent, air-gapped hardware tiers connected via a long-range, sub-GHz radio frequency (RF) telemetry link. It is engineered to operate when municipal power grids, commercial internet, and cellular towers have completely failed.
- ### AIRBORNE TACTICAL TIER (RUST FIRMWARE)
-┌─────────────────────────────────────────────────────────────────────────┐
-│ Standardized CubeSat-Class Aero-Pod (1U / 2U Form Factor)               ││                                                                         
-││  ┌─────────────────┐    ┌──────────────────┐    ┌────────────────────┐  ││  
-    │ Optical Camera  │    │ Far-IR MLX90640  │    │ MPU6050 IMU &      │  ││  
-    │ (Edge Contrasts)│    │ (Thermal Array)  │    │ HC-SR04 Ultrasonic │  ││  
-    └────────┬────────┘    └────────┬─────────┘    └─────────┬──────────┘  ││           
-    │                      │                        │             ││          
-    ▼                      ▼                        ▼             ││  
-    ┌───────────────────────────────────────────────────────────────────┐  
-    ││  │ RUST AVIONICS ENGINE                                              │  
-    ││  │ • Mode State Machine (Wildfire | Flood | Landslide | Quake)       │  
-    ││  │ • Electrical Power Subsystem (EPS) & Load Shedding                │  
-    ││  │ • 30s Loss-of-Signal (LOS) Watchdog & Circular Blackbox Buffer    │  
-    ││  │ • Compact 23-Byte Binary Serialization & CRC-16 (IBM) Framing     │  
-    ││  └──────────────────────────────────┬────────────────────────────────┘  │
-    └─────────────────────────────────────┼───────────────────────────────────┘
-    │ Direct LoRa RF Burst (9.6 kbps)│ 433 / 868 / 915 MHz (Line-of-Sight)▼GROUND INCIDENT TIER (GO IoT BACKEND & EOC)
-    ┌─────────────────────────────────────────────────────────────────────────┐│ Field Incident Command Station (Rugged Laptop / Field Gateway)          
-    ││                                                                         ││  ┌───────────────────────────────────────────────────────────────────┐  
-    ││  │ GO HIGH-CONCURRENCY BACKEND                                       │  ││  │ • Serial/SPI Radio Ingestion Worker (Goroutines + Channels)       │  
-    ││  │ • Binary Packet Deserializer & CRC-16 Integrity Arbiter           │  ││  │ • Regional Hub Dispatch Optimizer (Geodesic Haversine / ETA)      │  
-    ││  │ • Tactical Incident Bulletin Generator (Natural Language Alerts)  │  ││  │ • Native WebSocket Hub & REST API Engine                          │  
-    ││  └──────────────────────────────────┬────────────────────────────────┘  ││                                     │ Localhost / Ad-Hoc LAN WebSocket  │
-    │                                     ▼                                   ││  ┌───────────────────────────────────────────────────────────────────┐  ││  
-    │ BROWSER-BASED TACTICAL EOC CONSOLE (Leaflet GIS)                  │  ││  │ • Real-time GPS Track & Hazard Boundary Overlays                  │  ││  
-      • Road Cutoff / Access Route Vector Scoring                       │  ││  │ • One-Click Remote Mode Reconfiguration & RF Degradation Trigger  │  ││  
-  └───────────────────────────────────────────────────────────────────┘  │└─────────────────────────────────────────────────────────────────────────┘
----
+The system operates across two independent, air-gapped hardware tiers connected via a long-range, sub-GHz radio frequency (RF) telemetry link. It is engineered to operate when municipal power grids, commercial internet, and cellular towers have completely failed.
 
+```text
+                  AIRBORNE TACTICAL TIER (RUST FIRMWARE)
+ ┌─────────────────────────────────────────────────────────────────────────┐
+ │ Standardized CubeSat-Class Aero-Pod (1U / 2U Form Factor)               │
+ │                                                                         │
+ │  ┌─────────────────┐    ┌──────────────────┐    ┌────────────────────┐  │
+ │  │ Optical Camera  │    │ Far-IR MLX90640  │    │ MPU6050 IMU &      │  │
+ │  │ (Edge Contrasts)│    │ (Thermal Array)  │    │ HC-SR04 Ultrasonic │  │
+ │  └────────┬────────┘    └────────┬─────────┘    └─────────┬──────────┘  │
+ │           │                      │                        │             │
+ │           ▼                      ▼                        ▼             │
+ │  ┌───────────────────────────────────────────────────────────────────┐  │
+ │  │ RUST AVIONICS ENGINE                                              │  │
+ │  │ • Mode State Machine (Wildfire | Flood | Landslide | Quake)       │  │
+ │  │ • Electrical Power Subsystem (EPS) & Load Shedding                │  │
+ │  │ • 30s Loss-of-Signal (LOS) Watchdog & Circular Blackbox Buffer    │  │
+ │  │ • Compact 23-Byte Binary Serialization & CRC-16 (IBM) Framing     │  │
+ │  └──────────────────────────────────┬────────────────────────────────┘  │
+ └─────────────────────────────────────┼───────────────────────────────────┘
+                                       │
+                                       │ Direct LoRa RF Burst (9.6 kbps)
+                                       │ 433 / 868 / 915 MHz (Line-of-Sight)
+                                       ▼
+                 GROUND INCIDENT TIER (GO IoT BACKEND & EOC)
+ ┌─────────────────────────────────────────────────────────────────────────┐
+ │ Field Incident Command Station (Rugged Laptop / Field Gateway)          │
+ │                                                                         │
+ │  ┌───────────────────────────────────────────────────────────────────┐  │
+ │  │ GO HIGH-CONCURRENCY BACKEND                                       │  │
+ │  │ • Serial/SPI Radio Ingestion Worker (Goroutines + Channels)       │  │
+ │  │ • Binary Packet Deserializer & CRC-16 Integrity Arbiter           │  │
+ │  │ • Regional Hub Dispatch Optimizer (Geodesic Haversine / ETA)      │  │
+ │  │ • Tactical Incident Bulletin Generator (Natural Language Alerts)  │  │
+ │  │ • Native WebSocket Hub & REST API Engine                          │  │
+ │  └──────────────────────────────────┬────────────────────────────────┘  │
+ │                                     │                                   │
+ │                                     │ Localhost / Ad-Hoc LAN WebSocket  │
+ │                                     ▼                                   │
+ │  ┌───────────────────────────────────────────────────────────────────┐  │
+ │  │ BROWSER-BASED TACTICAL EOC CONSOLE (Leaflet GIS)                  │  │
+ │  │ • Real-time GPS Track & Hazard Boundary Overlays                  │  │
+ │  │ • Road Cutoff / Access Route Vector Scoring                       │  │
+ │  │ • One-Click Remote Mode Reconfiguration & RF Degradation Trigger  │  │
+ │  └───────────────────────────────────────────────────────────────────┘  │
+ └─────────────────────────────────────────────────────────────────────────┘
 ## 2. Why This Dual-Stack Architecture?
 
 | Subsystem | Implementation Language | Systems Engineering Justification |
