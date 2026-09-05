@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #080b24;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.25) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(13, 148, 136, 0.18) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.8) 0px, transparent 50%),
+      linear-gradient(159deg, #0f123b 0%, #090d2e 50%, #030617 100%);
+    background-attachment: fixed;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
+
+/* Vision UI Glassmorphic Card Styling */
+.v-card {
+  background: linear-gradient(127deg, rgba(6, 11, 40, 0.88) 0%, rgba(15, 23, 55, 0.55) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 16px 36px 0 rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.v-card:hover {
+  border-color: rgba(0, 117, 255, 0.3);
+  box-shadow: 0 18px 40px 0 rgba(0, 117, 255, 0.08);
+}
+
+.v-card-glow {
+  background: linear-gradient(127deg, rgba(14, 25, 75, 0.9) 0%, rgba(10, 18, 48, 0.7) 100%);
+  border: 1px solid rgba(0, 117, 255, 0.35);
+  box-shadow: 0 0 25px rgba(0, 117, 255, 0.18);
+}
+
+/* Glowing text & badges */
+.text-cyan-glow {
+  color: #0075ff;
+  text-shadow: 0 0 12px rgba(0, 117, 255, 0.5);
+}
+
+.text-emerald-glow {
+  color: #01b574;
+  text-shadow: 0 0 12px rgba(1, 181, 116, 0.5);
+}
+
+.text-amber-glow {
+  color: #ffb547;
+  text-shadow: 0 0 12px rgba(255, 181, 71, 0.5);
+}
+
+.text-crimson-glow {
+  color: #e31a1a;
+  text-shadow: 0 0 12px rgba(227, 26, 26, 0.5);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(8, 12, 36, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 117, 255, 0.4);
+}
+
+/* Reticle scanline for video HUD */
+.hud-scanline {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0, 117, 255, 0.08) 50%,
+    rgba(0, 117, 255, 0.08)
+  );
+  background-size: 100% 4px;
+}

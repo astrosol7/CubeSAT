@@ -1,0 +1,837 @@
+﻿MASTER PROMPT — AIRBORNE DISASTER-RESPONSE UNIT ELECTRONICS & PROTEUS CIRCUIT DESIGN
+
+1. PROJECT CONTEXT
+
+We are a team developing a small 2U CubeSat-form-factor airborne disaster-response prototype carried by a helium balloon.
+
+Important clarification:
+
+This is NOT an orbital CubeSat. The physical platform is a helium-balloon airborne unit used as a technology demonstrator for Earth observation, sensing, communication, and disaster-response support.
+
+The project focuses on disaster response during/after an event, not disaster mitigation.
+
+The four disaster scenarios we want the overall system to support are:
+
+1. Wildfire/fire
+2. Flood
+3. Landslide
+4. Earthquake
+
+The system should use a combination of:
+
+- Airborne observation
+- Ground/field sensor nodes
+- GPS/location information
+- Local processing
+- Communication
+- Data storage
+- A base command system
+- Two-way command and control
+
+The airborne unit is not the final decision maker. It collects observations, processes basic information, communicates with the base, and executes authorized commands from the base.
+
+---
+
+2. OVERALL SYSTEM IDEA
+
+The complete response system follows this loop:
+
+DISASTER
+   ↓
+GROUND / AIRBORNE OBSERVATION
+   ↓
+DATA COLLECTION
+   ↓
+LOCAL PROCESSING
+   ↓
+DATA PACKET
+   ↓
+COMMUNICATION
+   ↓
+BASE COMMAND SYSTEM
+   ↓
+SITUATION ASSESSMENT
+   ↓
+PRIORITY / RESPONSE DECISION
+   ↓
+COMMAND
+   ↓
+AIRBORNE / GROUND UNIT
+   ↓
+NEW OBSERVATION
+   ↓
+BASE
+
+The key concept is a closed-loop disaster-response information and command system.
+
+---
+
+3. AIRBORNE UNIT — MAIN PURPOSE
+
+The airborne unit should perform five main functions:
+
+A. Observation
+
+Use a camera and selected environmental/motion sensors to observe the environment.
+
+B. Navigation
+
+Determine:
+
+- Latitude
+- Longitude
+- Altitude
+- Time
+
+using GPS/GNSS.
+
+C. Processing
+
+The microcontroller collects sensor data, associates it with position/time, creates structured packets, and manages the unit.
+
+D. Communication
+
+Transmit information to the base and receive commands from the base.
+
+E. Local storage
+
+Store observations when communication is unavailable and transmit them later.
+
+---
+
+4. SIMPLIFIED AIRBORNE ELECTRONICS ARCHITECTURE
+
+Design the airborne unit around this architecture:
+
+                    AIRBORNE UNIT
+
+                 ┌─────────────────┐
+                 │      POWER      │
+                 │ Battery/Supply  │
+                 └────────┬────────┘
+                          │
+                   ┌──────▼──────┐
+                   │ REGULATION  │
+                   │ 3.3V / 5V   │
+                   └──────┬──────┘
+                          │
+                          ▼
+                ┌──────────────────┐
+                │ MAIN CONTROLLER  │
+                │ Arduino MKR WiFi │
+                │      1010        │
+                └────────┬─────────┘
+                         │
+       ┌─────────────────┼───────────────────┐
+       │                 │                   │
+       ▼                 ▼                   ▼
+     GPS             SENSORS              CAMERA
+   /GNSS              │                ESP32-CAM
+       │              │                   │
+       │        ┌─────┼─────┐             │
+       │        │     │     │             │
+       │       TEMP  ACCEL  LIGHT         │
+       │        │     │     │             │
+       └────────┴─────┴─────┴─────────────┘
+                         │
+                         ▼
+                  DATA PROCESSING
+                         │
+                    ┌────┴────┐
+                    ▼         ▼
+                 STORAGE    RADIO
+                 microSD      │
+                              ▼
+                       BASE COMMAND
+                              │
+                         COMMAND BACK
+                              │
+                              ▼
+                             MCU
+
+---
+
+5. REQUIRED AIRBORNE COMPONENTS
+
+Do NOT automatically use every sensor in the inventory.
+
+Select components based on engineering justification.
+
+Main controller
+
+Preferred physical controller:
+
+Arduino MKR WiFi 1010
+
+Role:
+
+- Sensor acquisition
+- Data processing
+- GPS interface
+- Camera control/interface
+- Storage management
+- Communication management
+- Command handling
+- System health monitoring
+
+IMPORTANT:
+
+If Arduino MKR WiFi 1010 is not supported properly in Proteus, use a suitable supported Arduino/ATmega MCU as a simulation equivalent.
+
+Clearly document the mapping between the Proteus MCU and the real MKR WiFi 1010.
+
+---
+
+6. GPS/GNSS
+
+A GPS/GNSS module is REQUIRED but is not currently in our hardware inventory.
+
+Use it to provide:
+
+- Latitude
+- Longitude
+- Altitude
+- UTC time
+- Position validity/fix status
+
+Preferred interface:
+
+GPS TX → MCU RX
+GPS RX ← MCU TX
+GPS GND → GND
+GPS VCC → regulated supply
+
+GPS is not a disaster sensor.
+
+Its purpose is to answer:
+
+WHERE and WHEN did the observation happen?
+
+Altitude is particularly useful because this is a helium-balloon airborne platform.
+
+For Proteus, if a real GPS model is unavailable, simulate it using a UART/serial data source.
+
+---
+
+7. CAMERA
+
+Use:
+
+ESP32-CAM
+
+Purpose:
+
+- Visual observation
+- Environmental context
+- Fire/wildfire observation
+- Flood-area observation
+- Landslide-area observation
+- General situational awareness
+
+The camera should be treated as a separate intelligent subsystem rather than a simple analog sensor.
+
+Conceptually:
+
+MCU
+ │
+ │ command
+ ▼
+ESP32-CAM
+ │
+ │ image/data
+ ▼
+MCU / STORAGE / COMMUNICATION
+
+Possible commands:
+
+CAPTURE_IMAGE
+CAPTURE_SEQUENCE
+SEND_IMAGE
+CHANGE_CAPTURE_MODE
+
+If ESP32-CAM does not have a suitable Proteus model, do NOT fabricate a nonexistent model.
+
+Instead, simulate the interface/function using:
+
+- UART
+- Virtual Terminal
+- Placeholder module
+- Or another appropriate Proteus abstraction
+
+and state clearly what is being simulated.
+
+---
+
+8. AIRBORNE SENSORS
+
+Use only these as the initial airborne sensor set:
+
+A. Temperature sensor
+
+Purpose:
+
+- Environmental temperature
+- Payload health monitoring
+- Camera/environment context
+
+B. 3-axis accelerometer
+
+Purpose:
+
+- Platform motion
+- Vibration/movement
+- Orientation/motion context
+- Detecting abnormal airborne movement
+
+IMPORTANT:
+
+Do NOT describe the airborne accelerometer as the main earthquake detector.
+
+Earthquake detection should primarily use ground sensor nodes.
+
+C. Ambient light sensor
+
+Purpose:
+
+- Determine illumination conditions
+- Day/night context
+- Help interpret camera observations
+- Camera operating context
+
+D. Voltage divider
+
+Connect battery/power measurement to MCU ADC.
+
+Purpose:
+
+Battery voltage
+      ↓
+Voltage divider
+      ↓
+MCU ADC
+      ↓
+Battery status
+
+The MCU should be able to determine whether power is:
+
+NORMAL
+LOW
+CRITICAL
+
+---
+
+9. POWER SYSTEM
+
+Design a realistic basic power subsystem.
+
+Include:
+
+- Battery/power source
+- Voltage regulation
+- Required 3.3 V rail
+- Required 5 V rail if necessary
+- Common ground
+- Decoupling capacitors
+- Power filtering
+- Voltage monitoring
+
+Do not assume every component can directly share the same supply voltage.
+
+Check the actual operating voltage of each selected component.
+
+The engineer/AI must identify:
+
+- Required voltage
+- Current requirement
+- Logic-level compatibility
+- Regulator requirements
+- Common-ground requirements
+
+---
+
+10. COMMUNICATION
+
+The airborne unit requires two-way communication.
+
+Airborne → Base
+
+Transmit:
+
+- Unit ID
+- Packet ID
+- Time
+- GPS position
+- Altitude
+- Sensor data
+- Event information
+- Data quality
+- Battery status
+- System status
+- Image ID/reference
+- Stored-data information
+
+Base → Airborne
+
+Commands may include:
+
+REQUEST_STATUS
+CAPTURE_IMAGE
+CAPTURE_SEQUENCE
+SEND_STORED_DATA
+CHANGE_SAMPLING_RATE
+CHANGE_OPERATION_MODE
+START_OBSERVATION
+STOP_OBSERVATION
+
+The communication link must support both:
+
+DOWNLINK:
+AIRBORNE → BASE
+
+UPLINK:
+BASE → AIRBORNE
+
+Do NOT assume Wi-Fi is automatically suitable as the final long-range airborne communication system.
+
+For the Proteus prototype, communication may initially be represented by:
+
+MCU ↔ UART ↔ Virtual Terminal
+
+A real radio should later be selected based on:
+
+- Range
+- Frequency
+- Data rate
+- Power consumption
+- Antenna
+- Regulatory requirements
+- Atmospheric operating environment
+
+Clearly identify the radio as TBD/required component if no real radio has yet been selected.
+
+---
+
+11. DATA STORAGE
+
+Include local storage, preferably a microSD module.
+
+Purpose:
+
+Sensor data
+     ↓
+MCU
+     ↓
+microSD
+     ↓
+temporary storage
+     ↓
+communication restored
+     ↓
+transmit missing data
+
+The system must not lose all observations simply because the communication link temporarily fails.
+
+Use packet sequence numbers so the base can identify missing packets.
+
+---
+
+12. DATA PACKET
+
+The airborne unit should produce structured data rather than random sensor readings.
+
+Example:
+
+UNIT_ID       = U01
+PACKET_ID     = 002341
+TIME          = 14:32:18 UTC
+
+LATITUDE      = XX.XXXX
+LONGITUDE     = XX.XXXX
+ALTITUDE      = XXXX m
+
+TEMPERATURE   = XX.X C
+
+ACCEL_X       = X.XX
+ACCEL_Y       = X.XX
+ACCEL_Z       = X.XX
+
+LIGHT         = XXXX
+BATTERY       = X.XX V
+
+EVENT         = FIRE
+PRIORITY      = HIGH
+DATA_QUALITY  = 0.92
+
+IMAGE_ID      = IMG0042
+
+STATUS        = NORMAL
+
+The packet structure should be modular so disaster-specific payloads can be added later.
+
+---
+
+13. DISASTER-SPECIFIC DATA
+
+Do NOT create four completely different airborne circuits.
+
+The airborne unit is a common platform.
+
+Disaster-specific information comes from different sources.
+
+FIRE
+
+Airborne:
+
+- Camera
+- GPS
+- Temperature
+- Light
+
+Ground:
+
+- Temperature
+- Flame sensor
+- Gas/smoke-related sensing if appropriate
+
+FLOOD
+
+Airborne:
+
+- Camera
+- GPS
+
+Ground:
+
+- Water sensor
+- Ultrasonic/distance sensor
+
+LANDSLIDE
+
+Airborne:
+
+- Camera
+- GPS
+
+Ground:
+
+- Accelerometer
+- Tilt sensor
+- Vibration sensor
+
+EARTHQUAKE
+
+Airborne:
+
+- Camera
+- GPS
+- Motion context
+
+Ground:
+
+- Accelerometer
+- Vibration sensor
+- Piezo vibration sensor
+
+The ground nodes provide disaster-specific measurements while the airborne unit provides broader observation and communication support.
+
+---
+
+14. STATUS INDICATORS
+
+Use the available LEDs and buzzer.
+
+Suggested assignment:
+
+GREEN  → System ready/normal
+
+BLUE   → Communication activity
+
+RED    → Fault/critical condition
+
+YELLOW → Command/operation activity
+
+BUZZER → Important alert/command/fault
+
+These are mainly for prototype/debugging and operator awareness.
+
+---
+
+15. AUTHENTICATION AND COMMAND VALIDATION
+
+The airborne unit must not blindly execute every received command.
+
+Conceptual process:
+
+Command received
+       ↓
+Is it addressed to this unit?
+       ↓
+Is the message valid?
+       ↓
+Is the command authorized?
+       ↓
+Execute command
+       ↓
+Send acknowledgement
+
+For the prototype, implement basic message integrity/authentication.
+
+Do not overcomplicate this with military-grade security unless specifically required.
+
+---
+
+16. PROTEUS CIRCUIT DESIGN REQUIREMENT
+
+Create the Proteus design in logical sections instead of one confusing schematic.
+
+SECTION 1 — POWER
+
+POWER INPUT
+     ↓
+REGULATOR
+     ↓
+3.3V / 5V
+     ↓
+MCU + sensors + modules
+
+Include:
+
+- Capacitors
+- Ground
+- Voltage monitoring
+- Appropriate protection where practical
+
+SECTION 2 — MCU
+
+Use the appropriate Proteus-supported MCU.
+
+Expose:
+
+- UART
+- I²C/SPI
+- ADC
+- GPIO
+
+SECTION 3 — GPS
+
+GPS UART ↔ MCU UART
+
+Simulate GPS data if necessary.
+
+SECTION 4 — SENSORS
+
+Temperature → MCU ADC/I²C
+Light       → MCU ADC
+Accelerometer → MCU I²C/SPI
+Voltage divider → MCU ADC
+
+SECTION 5 — CAMERA
+
+Represent ESP32-CAM through an appropriate simulated interface if Proteus lacks the actual device model.
+
+SECTION 6 — STORAGE
+
+MCU ↔ SPI ↔ microSD
+
+SECTION 7 — COMMUNICATION
+
+Initially:
+
+MCU ↔ UART ↔ Virtual Terminal
+
+Later replace the simulation interface with the selected real radio.
+
+SECTION 8 — STATUS
+
+MCU → LEDs
+MCU → Buzzer
+
+---
+
+17. IMPORTANT ENGINEERING REQUIREMENTS
+
+Before producing the final circuit, verify:
+
+1. Voltage compatibility
+2. Logic-level compatibility
+3. MCU pin availability
+4. UART conflicts
+5. I²C address conflicts
+6. SPI bus connections
+7. ADC requirements
+8. Current consumption
+9. Regulator capacity
+10. Decoupling
+11. Grounding
+12. Communication interface
+13. Connector requirements
+14. Sensor sampling requirements
+15. Data storage requirements
+
+Do not invent electrical specifications.
+
+If a component's exact specification is unknown, explicitly mark it:
+
+TBD — VERIFY WITH DATASHEET
+
+---
+
+18. PHYSICAL 2U ARRANGEMENT
+
+The electronics should eventually fit inside a 2U-style enclosure.
+
+Conceptually:
+
+             TOP / OBSERVATION SIDE
+          ┌───────────────────────┐
+          │      CAMERA           │
+          │      ESP32-CAM        │
+          ├───────────────────────┤
+          │                       │
+          │      MAIN PCB         │
+          │   MCU + sensors       │
+          │                       │
+          ├───────────────────────┤
+          │ POWER      STORAGE    │
+          │ Battery    microSD    │
+          ├───────────────────────┤
+          │ COMMUNICATION /       │
+          │ RADIO + CONNECTOR     │
+          └───────────────────────┘
+
+The camera should have an unobstructed field of view.
+
+The accelerometer should be mounted rigidly to the structure/PCB so its measurements represent platform motion.
+
+Keep power circuitry and sensitive signal circuitry organized to reduce noise.
+
+---
+
+19. WHAT I WANT YOU TO PRODUCE
+
+Act as a senior embedded-systems/electronics engineer experienced in CubeSat, UAV, balloon, telemetry, and disaster-response systems.
+
+Do NOT simply give generic advice.
+
+I want you to help me build the Proteus circuit progressively.
+
+Start with:
+
+STEP 1
+
+Produce the complete simplified electrical block diagram.
+
+STEP 2
+
+List the exact Proteus components required.
+
+For each component give:
+
+Component
+Purpose
+Voltage
+Interface
+Proteus model/alternative
+
+STEP 3
+
+Define the MCU pin assignment.
+
+Example:
+
+Pin → Device → Function
+
+STEP 4
+
+Design the power section with appropriate resistor/capacitor values where applicable.
+
+STEP 5
+
+Design the GPS interface.
+
+STEP 6
+
+Design the temperature, light and accelerometer interfaces.
+
+STEP 7
+
+Design the camera interface.
+
+STEP 8
+
+Design storage.
+
+STEP 9
+
+Design the communication interface and demonstrate it using Virtual Terminal if necessary.
+
+STEP 10
+
+Add LEDs and buzzer.
+
+STEP 11
+
+Define the data packet and communication protocol.
+
+STEP 12
+
+Define how commands from the base are received, validated and executed.
+
+STEP 13
+
+Review the entire schematic for:
+
+- Wiring errors
+- Voltage errors
+- Pin conflicts
+- Missing pull-ups
+- Missing capacitors
+- Incorrect interfaces
+- Unsafe assumptions
+- Components that are unnecessary
+
+STEP 14
+
+Give me a final clean Proteus wiring plan that I can follow wire-by-wire.
+
+---
+
+20. IMPORTANT RULE
+
+Do NOT make the circuit unnecessarily complicated.
+
+The goal of the first prototype is to demonstrate:
+
+POWER
+  ↓
+MCU
+  ↓
+GPS + SENSOR DATA
+  ↓
+DATA PROCESSING
+  ↓
+STORAGE
+  ↓
+COMMUNICATION
+  ↓
+BASE
+  ↓
+COMMAND
+  ↓
+MCU
+  ↓
+ACTION
+
+The final design should be simple enough for a student engineering team to build, but technically structured enough for an engineer to review and improve.
+
+If an actual component is missing from our inventory, clearly label it:
+
+REQUIRED TO ACQUIRE
+
+If a Proteus model does not exist, clearly label it:
+
+SIMULATION SUBSTITUTE REQUIRED
+
+Do not pretend the simulation is identical to the real hardware.
+
+The immediate goal is to produce a clear, engineer-reviewable Proteus schematic of the airborne unit itself.
